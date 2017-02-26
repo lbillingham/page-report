@@ -35,6 +35,16 @@ def test_cli_good_url_outfile_option(runner):
         supplied_url, outfile
     )
 
+def test_cli_bad_url_provided(runner):
+    """do we error on bad url"""
+    bad_url = 'sdfsdsd'
+    result = runner.invoke(cli.main, [bad_url])
+    assert result.exit_code != 0
+    assert result.exception
+    for mess_part in ['not a valid url', bad_url]:
+        assert mess_part in result.output
+
+
 def test_cli_good_url_provided(runner):
     """do we resopnd to positional arguments properly?"""
     supplied_url = 'https://www.example.com'

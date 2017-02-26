@@ -3,6 +3,7 @@ Building the Command Line Interface
 for our app
 """
 import click
+import validators
 
 
 @click.command()
@@ -15,5 +16,12 @@ def main(url, outfile):
     """
     Page Report scrapes a URL and reports links, word counts, ...
     """
+    if not validators.url(url):
+        mess = """
+            {} is not a valid url,
+            need something like https://www.example.com
+            including protocol.'
+            """.format(url)
+        raise click.BadParameter(mess)
     success_mess = 'Report on {} written to {}.'
     click.echo(success_mess.format(url, outfile.name))
