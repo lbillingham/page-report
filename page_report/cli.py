@@ -5,7 +5,7 @@ for our app
 import click
 import validators
 
-from page_report.page_scanner import HTTPError, print_report
+from page_report.page_scanner import HTTPError, report_for
 
 
 @click.command()
@@ -26,7 +26,7 @@ def main(url, outfile):
             """.format(url)
         raise click.BadParameter(mess)
     try:
-        print_report(url)
+        report_for(url, outfile.name)
     except HTTPError:
         mess = 'failed to get web page from {}'.format(url)
         exception = click.ClickException

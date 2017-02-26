@@ -4,6 +4,7 @@ import re
 from collections import namedtuple, Counter
 from jinja2 import Environment, FileSystemLoader
 from bs4 import BeautifulSoup
+from bs4.element import NavigableString
 from requests import get
 # HTTPError will look unused
 #  but import here so client code
@@ -29,8 +30,12 @@ def soup_from(url):
 CONTENT = 'content'
 LINK = 'a'
 KEYWORDS_ATTR = {'name':'keywords'}
+N_COMMON = 5
 META = 'meta'
 PARAGRAPH = 'p'
+
+TEMPLATE_DIR = 'templates'
+REPORT_TEMPLATE = 'page_report.html'
 
 
 Link = namedtuple('Link', ['href', 'text'])
@@ -50,12 +55,14 @@ class SoupParser(object):
         self.title = self.soup.find('title').contents[0]
         self.words = self.paragraph_words()
         self.metas = self.meta_tags()
+        self.tag_count = len(self.metas)
         self.links = self.link_destinations_and_text()
         self.keywords = self.meta_keywords()
         self.total_words = len(self.words)
-        word_count = Counter(self.words)
-        self.unique_words = len(word_count)
-        self.common_words = [tup[0] for tup in word_count]
+        self.unique_words = Counter(self.words)
+        self.unique_word_count = len(self.unique_words)
+        ranked_words = self.unique_words.most_common(N_COMMON)
+        self.common_words = [tup[0] for tup in ranked_words]
 
 
     def paragraph_words(self):
@@ -82,11 +89,23 @@ class SoupParser(object):
         list of named tuples of links
         hrefs and text
         """
+        i = 0
         bare_links = self.soup.find_all(LINK)
-        links = [
-            Link(
-                href=link.get('href'), text=link.get('text')) for link in bare_links
-        ]
+        links = []
+        for link in bare_links:
+            href = link.get('href')
+            content = link.contents
+            title = link.get('title')
+            alttxt = link.get('alt')
+            if content and isinstance(content[0], NavigableString):
+                text = content[0]
+            elif title:
+                text = title
+            elif alttxt:
+                text = alttxt
+            else:
+                text = ''
+            links.append(Link(href=href, text=text))
         return links
 
     def meta_keywords(self):
@@ -103,7 +122,7 @@ def print_report(url):
     print('Page', url)
     print('Title', parsed.title)
     print('All Meta Tags', parsed.metas)
-    print('filesize {}KB'.format(kb))
+    print('filesize {} KB'.format(kb))
     print('word count', parsed.total_words)
     print('number of unique words', parsed.unique_words)
     print('most common words: {}'.format(parsed.common_words))
@@ -118,13 +137,36 @@ def print_report(url):
     for hr, tx in parsed.links:
         print(hr, tx)
 
+
+def render_report(url):
+    soup, kbs = soup_from(url)
+    parsed = SoupParser(soup)
+    for_template = {
+        'url': url,
+        'title': parsed.title,
+        'tag_count': parsed.tag_count,
+        'page_size_kb': kbs,
+        'word_count': parsed.total_words,
+        'unique_words': parsed.unique_words,
+        'unique_word_count': parsed.unique_word_count,
+        'ranked_words': parsed.common_words,
+        'links': parsed.links
+    }
+    template = load_template()
+    htmlout = template.render(for_template)
+    return htmlout
+
+
 def load_template():
-    env = Environment(loader=FileSystemLoader('templates'))
-    template = env.get_template('page_report.html')
+    env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
+    template = env.get_template(REPORT_TEMPLATE)
     return template
 
 
-def save_report(template, template_vars):
-    htmlout = template.render(template_vars)
-    with open('./outfile.html', 'w') as file_:
-        file_.write(htmlout)
+def save_report(rendered_template, outfile):
+    with open(outfile, 'wb') as file_:
+        file_.write(rendered_template.encode('utf-8'))
+
+def report_for(url, report_file):
+    rendered = render_report(url)
+    save_report(rendered, report_file)
