@@ -6,11 +6,14 @@ import click
 
 
 @click.command()
-@click.option('--as-cowboy', '-c', is_flag=True, help='Greet as a cowboy.')
-@click.argument('name', default='world', required=False, metavar='<name>')
-def main(name, as_cowboy):
+@click.option('--outfile', '-o',
+              type=click.File('wb'),
+              default='page_report.html',
+              help='Path on which to write report.')
+@click.argument('url', required=True, metavar='<url>')
+def main(url, outfile):
     """
     Page Report scrapes a URL and reports links, word counts, ...
     """
-    greet = 'Howdy' if as_cowboy else 'Hello'
-    click.echo('{0}, {1}.'.format(greet, name))
+    success_mess = 'Report on {} written to {}.'
+    click.echo(success_mess.format(url, outfile.name))

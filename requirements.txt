@@ -1,1 +1,4 @@
+beautifulsoup4
 click
+jinja2
+requests

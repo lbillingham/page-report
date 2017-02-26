@@ -14,27 +14,36 @@ def runner():
 # pylint:disable=redefined-outer-name
 #   otherwise pytest fixtures look like problems
 
-def test_default_cli(runner):
+def test_error_on_no_url(runner):
     """does running with default args give expected result?"""
     result = runner.invoke(cli.main)
+    assert result.exit_code != 0
+    assert result.exception
+    for mess_part in ['Usage', 'url', 'Error', 'Missing argument']:
+        assert mess_part in result.output
+
+
+def test_cli_good_url_outfile_option(runner):
+    """do we resopnd to --flag option propely?"""
+    supplied_url = 'https://www.example.com'
+    outfile = 'spam.html'
+    options = [supplied_url, '-o {}'.format(outfile)]
+    result = runner.invoke(cli.main, options)
     assert result.exit_code == 0
     assert not result.exception
-    assert result.output.strip() == 'Hello, world.'
+    assert result.output.strip() == 'Report on {} written to  {}.'.format(
+        supplied_url, outfile
+    )
 
-
-def test_cli_with_option(runner):
-    """do we resopnd to --flag option properly?"""
-    result = runner.invoke(cli.main, ['--as-cowboy'])
-    assert not result.exception
-    assert result.exit_code == 0
-    assert result.output.strip() == 'Howdy, world.'
-
-
-def test_cli_with_arg(runner):
+def test_cli_good_url_provided(runner):
     """do we resopnd to positional arguments properly?"""
-    result = runner.invoke(cli.main, ['Laurence'])
+    supplied_url = 'https://www.example.com'
+    expect_outfile = 'page_report.html'
+    result = runner.invoke(cli.main, [supplied_url])
     assert result.exit_code == 0
     assert not result.exception
-    assert result.output.strip() == 'Hello, Laurence.'
+    assert result.output.strip() == 'Report on {} written to {}.'.format(
+        supplied_url, expect_outfile
+    )
 
 # pylint:enable=redefined-outer-name

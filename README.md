@@ -2,6 +2,9 @@
 
 Page Report scrapes a URL and reports links, word counts, ...
 
+It saves the contents of the report in
+
+    './page_report.html'
 
 # Installation
 
