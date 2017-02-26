@@ -5,6 +5,8 @@ for our app
 import click
 import validators
 
+from page_report.page_scanner import HTTPError, soup_from
+
 
 @click.command()
 @click.option('--outfile', '-o',
@@ -23,5 +25,12 @@ def main(url, outfile):
             including protocol.'
             """.format(url)
         raise click.BadParameter(mess)
+    try:
+        soup_from(url)
+    except HTTPError:
+        mess = 'failed to get web page from {}'.format(url)
+        exception = click.ClickException
+        exception.exit_code = 1
+        raise exception(mess)
     success_mess = 'Report on {} written to {}.'
     click.echo(success_mess.format(url, outfile.name))
