@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="templates/typography.css">
+    <title>Page Report for: {{ title }}</title>
+</head>
+<body>
+    <h1>Page Report for: {{ title }}</h1>
+    <h2>Page Language</h2>
+    <ul>
+     <li>Word count {{ word_count }}</li>
+     <li>Number of unique words {{ uniqe_word_count }}</li>
+    </ul>
+    <h2>Page Meta Tags</h2>
+    <ul>
+     <li>Tag count {{ tag_count }}</li>
+     <li>Unique tags {{ unique_tags_count }}</li>
+    </ul>
+     <div class="container">
+        <table>
+        <tr>
+            <th>most popular tags</th>
+        </tr>
+        {% for tag in ranked_tags %}
+        <tr><td>{{ tag }}: {{ unique_tags[tag] }} </td></tr>
+        {% endfor %}
+        </table>
+     </div>
+</body>
+</html>
