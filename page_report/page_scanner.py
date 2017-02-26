@@ -63,6 +63,7 @@ class SoupParser(object):
         self.unique_word_count = len(self.unique_words)
         ranked_words = self.unique_words.most_common(N_COMMON)
         self.common_words = [tup[0] for tup in ranked_words]
+        self.missing_keywords = self.metas_not_present()
 
 
     def paragraph_words(self):
@@ -114,6 +115,13 @@ class SoupParser(object):
         kws = [v.strip() for v in kw_str.split(',')]
         return kws
 
+    def metas_not_present(self):
+        missing = []
+        for kword in self.keywords:
+            if kword not in self.unique_words.keys():
+                missing.append(kword)
+        return missing
+
 def print_report(url):
     soup, kb = soup_from(url)
     template = load_template()
@@ -144,6 +152,7 @@ def render_report(url):
         'url': url,
         'title': parsed.title,
         'tag_count': parsed.tag_count,
+        'missing_keywords': parsed.missing_keywords,
         'page_size_kb': kbs,
         'word_count': parsed.total_words,
         'unique_words': parsed.unique_words,
