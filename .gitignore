@@ -1,5 +1,7 @@
 *.pyc
 
+*.html
+
 dist/
 build/
 *.egg-info/

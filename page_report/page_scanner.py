@@ -89,7 +89,6 @@ class SoupParser(object):
         list of named tuples of links
         hrefs and text
         """
-        i = 0
         bare_links = self.soup.find_all(LINK)
         links = []
         for link in bare_links:
