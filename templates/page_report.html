@@ -11,9 +11,19 @@
     </ul>
     <ul>
      <li>Page title: "{{ title }}" </li>
-     <li>Number of meta tags: {{ tag_count }}</li>
      <li>File size: {{ page_size_kb }} KB</li>
+     <li>Number of meta tags: {{ tag_count }}</li>
     </ul>
+     <div class="container">
+        <table>
+        <tr>
+            <th>Keywords not in page content</th>
+        </tr>
+        {% for miss in missing_keywords %}
+        <tr><td>{{ miss }}</td></tr>
+        {% endfor %}
+        </table>
+     </div>
     <h2>Page Language</h2>
     <ul>
      <li>Word count: {{ word_count }}</li>
